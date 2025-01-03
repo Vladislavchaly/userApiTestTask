@@ -1,0 +1,42 @@
+version: '3.6'
+
+services:
+    nginx:
+        container_name: api_nginx
+        image: nginx
+        ports:
+            - "80:80"
+        volumes:
+            - ./public:/var/www/service/public:ro
+            - ./.docker/nginx/vhosts/default.conf:/etc/nginx/conf.d/default.conf
+        links:
+            - php-fpm
+        depends_on:
+            - php-fpm
+
+    php-fpm:
+        container_name: api_php-fpm
+        build:
+            context: ./.docker/php-fpm
+            dockerfile: Dockerfile
+        volumes:
+            - ./:/var/www/service
+            - ./.docker/php-fpm/php.ini:/usr/local/etc/php/php.ini:ro
+
+    mysql:
+        container_name: api_mysql
+        restart: always
+        image: mysql:8.0
+        ports:
+            - "3315:3306"
+        environment:
+            MYSQL_ROOT_PASSWORD: '123456'
+        volumes:
+            - mysql-data:/var/lib/mysql
+
+    redis:
+        container_name: api_redis
+        image: redis:alpine
+
+volumes:
+    mysql-data:
